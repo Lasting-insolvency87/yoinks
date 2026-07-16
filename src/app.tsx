@@ -159,7 +159,7 @@ export function App({
 
   useInput(
     (_input, key) => {
-      if (key.escape && (phase.name === 'picking' || phase.name === 'error')) resetToInput()
+      if (key.escape && (phase.name === 'picking' || phase.name === 'error' || phase.name === 'done')) resetToInput()
       if (key.escape && (phase.name === 'probing' || phase.name === 'downloading')) cancelRun()
       if (key.return && (phase.name === 'error' || phase.name === 'done')) resetToInput()
     },
