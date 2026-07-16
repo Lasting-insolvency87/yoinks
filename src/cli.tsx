@@ -2,6 +2,7 @@ import React from 'react'
 import {createRequire} from 'node:module'
 import {render} from 'ink'
 import {App, type Outcome} from './app.js'
+import {captureFrames} from './lib/click-map.js'
 import {readClipboard} from './lib/clipboard.js'
 import {isProbablyUrl} from './lib/platforms.js'
 
@@ -73,6 +74,8 @@ if (isTTY) {
 let outcome: Outcome = {}
 const {waitUntilExit} = render(
   <App initialUrl={initialUrl} clipboardUrl={clipboardUrl} onOutcome={result => (outcome = result)} />,
+  // keep a copy of every frame so clicks can be hit-tested against it
+  {stdout: captureFrames(process.stdout)},
 )
 
 await waitUntilExit()

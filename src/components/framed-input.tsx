@@ -2,8 +2,8 @@ import React, {type ReactNode} from 'react'
 import {Box, Text} from 'ink'
 import {theme} from '../theme.js'
 
-/** Total columns a framed-input button occupies (label + 2 cells padding per side). */
-export const frameButtonWidth = (label: string) => label.length + 4
+/** Total columns the button occupies (label + 2 cells padding per side). */
+const frameButtonWidth = (label: string) => label.length + 4
 
 /**
  * A single-line input frame with the title sitting on the top border,
@@ -14,8 +14,8 @@ export const frameButtonWidth = (label: string) => label.length + 4
  * drops its own right border and its lines run straight into the block, so
  * input and button read as one control. Half-blocks on the outer rows keep
  * the fill optically the same height as the thin frame borders. Clicks are
- * not handled here — the app hit-tests mouse events against the block's
- * position (see app.tsx). `buttonDim` shows the pressed/loading state.
+ * not handled here — the app hit-tests mouse events against the rendered
+ * frame (see lib/click-map.ts). `buttonDim` shows the pressed/loading state.
  */
 export function FramedInput({
   title,

@@ -32,6 +32,26 @@ export function shortenPath(filepath: string, homedir: string, max = 60): string
   return `${pretty.slice(0, max - ext.length - 1)}…${ext}`
 }
 
+/**
+ * Word-wrap into left-flush lines. Ink's own wrapping keeps the space at
+ * each break (wrap-ansi with trim: false), which indents every continuation
+ * line by one cell and makes multi-line text look off-center.
+ */
+export function wrapText(text: string, width: number): string[] {
+  const lines: string[] = []
+  let line = ''
+  for (const word of text.split(/\s+/).filter(Boolean)) {
+    if (!line) line = word
+    else if (line.length + 1 + word.length <= width) line += ` ${word}`
+    else {
+      lines.push(line)
+      line = word
+    }
+  }
+  if (line) lines.push(line)
+  return lines
+}
+
 export function formatSpeed(bytesPerSecond: number): string {
   if (!Number.isFinite(bytesPerSecond) || bytesPerSecond <= 0) return ''
   return `${formatBytes(bytesPerSecond)}/s`

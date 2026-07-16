@@ -36,7 +36,9 @@ $ yoinks                                 # prompts for a url
 
 yoinks takes over the terminal (full-screen, centered — and restores your
 scrollback on exit). Pick a format with ↑/↓ (or j/k, or number keys) and
-hit enter. `esc` goes back, `^c` quits. Files are saved to `~/Downloads`,
+hit enter. `esc` goes back, `^c` quits. Or just use the mouse — the yoink
+button, the format list and the footer hints are all clickable, and
+clicking the logo takes you back home. Files are saved to `~/Downloads`,
 and the file path is printed to your terminal when you're done.
 
 ## How it works

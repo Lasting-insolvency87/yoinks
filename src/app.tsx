@@ -4,14 +4,15 @@ import path from 'node:path'
 import {Box, Text, useApp, useInput, useStdout} from 'ink'
 import SelectInput from 'ink-select-input'
 import Spinner from 'ink-spinner'
-import {FramedInput, frameButtonWidth} from './components/framed-input.js'
+import {FramedInput} from './components/framed-input.js'
 import {FullScreen} from './components/fullscreen.js'
 import {Logo} from './components/logo.js'
 import {Panel} from './components/panel.js'
 import {ProgressBar} from './components/progress-bar.js'
 import {Shortcuts} from './components/shortcuts.js'
 import {TextInput} from './components/text-input.js'
-import {formatBytes, formatDuration, formatEta, formatSpeed, shortenPath, truncate} from './lib/format.js'
+import {clickTargetAt, findFrameRow, frameRowSpan, type ClickTarget} from './lib/click-map.js'
+import {formatBytes, formatDuration, formatEta, formatSpeed, shortenPath, truncate, wrapText} from './lib/format.js'
 import {addToHistory, loadHistory} from './lib/history.js'
 import {detectPlatform, isProbablyUrl, type Platform} from './lib/platforms.js'
 import {useMouseClick} from './lib/use-mouse-click.js'
@@ -29,6 +30,10 @@ import {
 
 const OUT_DIR = path.join(os.homedir(), 'Downloads')
 const YOINK_BUTTON = 'yoink'
+const DONE_LABEL = '↵ yoink another'
+const TAGLINE = 'yoink any video. paste. yoink. done.'
+
+const choiceLabel = (choice: DownloadChoice) => `${choice.kind === 'audio' ? '♪ ' : '▶ '}${choice.label}`
 
 // explicit blank lines — empty <Box height={1}/> spacers can collapse
 const Gap = ({lines = 1}: {lines?: number}) => (
@@ -118,6 +123,7 @@ export function App({
   const [info, setInfo] = useState<VideoInfo>()
   const [choices, setChoices] = useState<DownloadChoice[]>([])
   const ytdlpRef = useRef('')
+  const highlightRef = useRef(0) // choice under the cursor, for the ↵ hint click
   const infoJsonRef = useRef<string | undefined>(undefined)
   const abortRef = useRef<AbortController | undefined>(undefined)
   const [phase, setPhase] = useState<Phase>(initialUrl ? {name: 'probing', status: 'warming up…'} : {name: 'input'})
@@ -142,6 +148,7 @@ export function App({
       infoJsonRef.current = infoJsonPath
       setInfo(videoInfo)
       setChoices(buildChoices(videoInfo))
+      highlightRef.current = 0
       setPhase({name: 'picking'})
     } catch (error) {
       if (controller.signal.aborted) return
@@ -187,45 +194,8 @@ export function App({
     void startProbe(trimmed)
   }
 
-  // Hit-test clicks against the yoink button. Ink has no absolute-position
-  // API, so the button's cell rectangle is re-derived from the input-phase
-  // layout below — keep both in sync: FullScreen centers a column of
-  // logo(3) + gap(1) + tagline(1) + subtitle(1) + gap(1) = 7 rows above the
-  // 3-row frame, then warning/clipboard-note?(1) + gap(2) + shortcuts(1)
-  // below it.
-  const rows = stdout?.rows ?? 24
-  const buttonW = frameButtonWidth(YOINK_BUTTON)
   const clipboardOffered = Boolean(clipboardUrl) && urlInput === ''
   const clipboardAccepted = Boolean(clipboardUrl) && urlInput === clipboardUrl
-  const noteRow = phase.name === 'input' && (phase.warning || clipboardOffered || clipboardAccepted) ? 1 : 0
-  const contentHeight = 7 + 3 + noteRow + 2 + 1
-  const frameTop = Math.floor((rows - 1 - contentHeight) / 2) + 7 + 1
-  const buttonLeft = Math.floor((columns - (boxWidth + buttonW)) / 2) + boxWidth + 1
-  useMouseClick(
-    (x, y) => {
-      // ±1 cell of slack — centering can round differently than we do
-      if (y >= frameTop - 1 && y <= frameTop + 3 && x >= buttonLeft - 1 && x <= buttonLeft + buttonW) {
-        handleUrlSubmit(urlInput)
-      }
-    },
-    phase.name === 'input' && Boolean(process.stdin.isTTY),
-  )
-
-  // Same idea for the done screen's "↵ yoink another" box: header(7) +
-  // yoinked line(1) + filepath(1) + gap(1) = 10 rows above the 3-row box,
-  // then gap(2) + shortcuts(1) below it.
-  const doneLabel = '↵ yoink another'
-  const doneBoxW = doneLabel.length + 8 // paddingX(3)×2 + borders
-  const doneBoxTop = Math.floor((rows - 1 - (10 + 3 + 3)) / 2) + 10 + 1
-  const doneBoxLeft = Math.floor((columns - doneBoxW) / 2) + 1
-  useMouseClick(
-    (x, y) => {
-      if (y >= doneBoxTop - 1 && y <= doneBoxTop + 3 && x >= doneBoxLeft - 1 && x <= doneBoxLeft + doneBoxW) {
-        resetToInput()
-      }
-    },
-    phase.name === 'done' && Boolean(process.stdin.isTTY),
-  )
 
   const handlePick = (item: {value: number}) => {
     const choice = choices[item.value]
@@ -269,11 +239,59 @@ export function App({
     hints = [hints[0]!, ['↑', 'history'], ...hints.slice(1)]
   }
 
+  // Anything a mouse user would expect to press is clickable. Targets are
+  // found by their text in the rendered frame (see lib/click-map.ts), so
+  // there is no layout math to keep in sync.
+  const hintAction = (key: string): (() => void) | undefined => {
+    if (key === '^c') return () => exit()
+    if (key === 'esc') return phase.name === 'probing' || phase.name === 'downloading' ? cancelRun : resetToInput
+    if (key === '↵') {
+      if (phase.name === 'input') return () => handleUrlSubmit(urlInput)
+      if (phase.name === 'picking') return () => handlePick({value: highlightRef.current})
+      if (phase.name === 'error' || phase.name === 'done') return resetToInput
+    }
+    return undefined // ↑↓ / ↑ stay keyboard-only
+  }
+  const clickTargets: ClickTarget[] = []
+  if (phase.name === 'input') {
+    // the frame button rows above/below the label are part of the button
+    clickTargets.push({match: `  ${YOINK_BUTTON}  `, padY: 1, action: () => handleUrlSubmit(urlInput)})
+  }
+  if (phase.name === 'picking') {
+    for (const [index, choice] of choices.entries()) {
+      clickTargets.push({match: choiceLabel(choice), action: () => handlePick({value: index})})
+    }
+  }
+  if (phase.name === 'done') {
+    clickTargets.push({match: DONE_LABEL, padX: 4, padY: 1, action: resetToInput})
+  }
+  for (const [key, label] of hints) {
+    const action = hintAction(key)
+    if (action) clickTargets.push({match: `${key} ${label}`, action})
+  }
+
+  useMouseClick(
+    (x, y) => {
+      // the logo takes you home — it's the 3 rows one gap above the tagline
+      const taglineRow = findFrameRow(TAGLINE)
+      if (taglineRow > 3 && y - 1 >= taglineRow - 4 && y - 1 <= taglineRow - 2) {
+        const span = frameRowSpan(y - 1)
+        if (span && x >= span[0] - 1 && x <= span[1] + 1) {
+          if (phase.name === 'probing' || phase.name === 'downloading') cancelRun()
+          else if (phase.name !== 'input') resetToInput()
+          return
+        }
+      }
+      clickTargetAt(x, y, clickTargets)?.action()
+    },
+    Boolean(process.stdin.isTTY),
+  )
+
   return (
     <FullScreen>
       <Logo />
       <Gap />
-      <Text color={theme.primary}>yoink any video. paste. yoink. done.</Text>
+      <Text color={theme.primary}>{TAGLINE}</Text>
       <Text color={theme.gray}>youtube · x · instagram · threads · tiktok · +1800 more</Text>
       <Gap />
 
@@ -314,9 +332,13 @@ export function App({
       {phase.name === 'picking' && platform && (
         <Box width={Math.min(columns - 4, 78)}>
           <Box flexDirection="column" flexGrow={1} flexBasis={0} paddingTop={1} paddingRight={3}>
-            <Text bold color={theme.primary}>
-              {info?.title}
-            </Text>
+            {/* wrapped by hand so continuation lines stay flush left —
+                ink's wrapping keeps the break's space as a 1-cell indent */}
+            {wrapText(info?.title ?? '', Math.max(10, Math.min(columns - 4, 78) - 41)).map((line, index) => (
+              <Text key={index} bold color={theme.primary}>
+                {line}
+              </Text>
+            ))}
             <Gap />
             <Text color={theme.gray}>
               ▸ {platform.label}
@@ -328,10 +350,11 @@ export function App({
             <SelectInput
               items={choices.map((choice, index) => ({
                 key: String(index),
-                label: `${choice.kind === 'audio' ? '♪ ' : '▶ '}${choice.label}`,
+                label: choiceLabel(choice),
                 value: index,
               }))}
               onSelect={handlePick}
+              onHighlight={item => (highlightRef.current = item.value)}
             />
           </Panel>
         </Box>
@@ -400,7 +423,7 @@ export function App({
           <Text color={theme.gray}>{shortenPath(phase.filepath, os.homedir(), 60)}</Text>
           <Gap />
           <Box borderStyle="round" borderColor={theme.gray} paddingX={3}>
-            <Text bold color={theme.primary}>{doneLabel}</Text>
+            <Text bold color={theme.primary}>{DONE_LABEL}</Text>
           </Box>
         </Box>
       )}
