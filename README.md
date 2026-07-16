@@ -12,6 +12,8 @@ Download videos from YouTube, X/Twitter, Instagram, Threads, TikTok and
 resolution (or audio-only mp3), done. No popups, no fake download buttons,
 no sketchy redirects.
 
+<img src="assets/home.png" alt="yoinks home screen — paste a link and hit yoink" width="100%">
+
 ## Install
 
 ```sh
@@ -40,6 +42,8 @@ hit enter. `esc` goes back, `^c` quits. Or just use the mouse — the yoink
 button, the format list and the footer hints are all clickable, and
 clicking the logo takes you back home. Files are saved to `~/Downloads`,
 and the file path is printed to your terminal when you're done.
+
+<img src="assets/download-options.png" alt="yoinks format picker — resolutions with estimated file sizes, plus audio-only mp3" width="100%">
 
 ## How it works
 
